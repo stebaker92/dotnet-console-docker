@@ -1,4 +1,17 @@
+# Create the build environment image
+FROM microsoft/dotnet:2.0-sdk as build-env
+WORKDIR /app
+ 
+# Copy the project file and restore the dependencies
+COPY *.csproj ./
+RUN dotnet restore
+ 
+# Copy the remaining source files and build the application
+COPY . ./
+RUN dotnet publish -c Release -o out
+ 
+# Build the runtime image
 FROM microsoft/dotnet:2.0-runtime
 WORKDIR /app
-ADD bin/Debug/netcoreapp2.0/publish/ ./
+COPY --from=build-env /app/out .
 ENTRYPOINT ["dotnet", "./ConsoleApp.dll"]
